@@ -57,6 +57,8 @@ class WeatherService {
 
       // Map to store the best forecast for each day (key is dayOfYear)
       final Map<int, ForecastModel> dailyForecasts = {};
+
+      // Use local time for comparison since ForecastModel converts to local time.
       final nowDayOfYear = DateTime.now().dayOfYear;
 
       for (var itemJson in forecastList) {
@@ -71,8 +73,9 @@ class WeatherService {
           continue;
         }
 
-        // We look for the data point closest to 12:00 PM for a stable daily temperature
+        // Here look for the data point closest to 12:00 PM (noon) for a stable daily temperature
         final targetHour = 12;
+        // Calculate the absolute difference from the target hour (12)
         final currentHourDifference = (forecast.dateTime.hour - targetHour)
             .abs();
 
@@ -85,8 +88,14 @@ class WeatherService {
         }
       }
 
-      // Return the values from the map (which contain the next 5 days of forecast)
-      return dailyForecasts.values.toList();
+      // 1. Convert map values to list
+      final resultList = dailyForecasts.values.toList();
+
+      // 2. Sort the list by date to ensure they are returned in chronological order
+      resultList.sort((a, b) => a.dateTime.compareTo(b.dateTime));
+
+      // 3. Limit to the next 5 days
+      return resultList.take(5).toList();
     } else if (response.statusCode == 404) {
       throw Exception('Forecast city not found. Status code: 404');
     } else {

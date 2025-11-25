@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blueGrey,
         // Using adaptivePlatformDensity for wider Flutter SDK compatibility
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        fontFamily: 'Inter',
+        fontFamily: 'Inter', // Currently using this font only
       ),
       home: const HomeScreen(),
       debugShowCheckedModeBanner: false,

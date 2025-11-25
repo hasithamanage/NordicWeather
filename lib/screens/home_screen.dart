@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:weather_icons/weather_icons.dart';
+import 'package:lottie/lottie.dart'; // Required for Lottie animations
+
 import '../services/weather_service.dart';
 import '../models/weather_model.dart';
 import '../models/forecast_model.dart';
@@ -63,33 +66,99 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// Returns the appropriate Material Icon based on condition string.
-  IconData _getWeatherIcon(String condition) {
-    switch (condition.toLowerCase()) {
-      case 'clear':
-        return Icons.wb_sunny;
-      case 'clouds':
-        return Icons.cloud;
-      case 'rain':
-      case 'drizzle':
-      case 'thunderstorm':
-        return Icons.umbrella;
-      case 'snow':
-        return Icons.ac_unit;
-      case 'mist':
-      case 'fog':
-      case 'haze':
-      case 'smoke':
-      case 'dust':
-        return Icons.filter_drama;
-      default:
-        return Icons.cloud_queue;
+  /// Returns the asset path for the Lottie animation based on the OWM ID and icon code (Day/Night).
+  String _getLottieAsset(int id, String iconCode) {
+    final isNight = iconCode.endsWith('n');
+    final mainId =
+        id ~/ 100; // Get the main weather group (2xx, 3xx, 8xx, etc.)
+
+    // --- 7xx Atmosphere: Mist, Smoke, Haze, Fog ---
+    if (mainId == 7) {
+      if (id == 701 || id == 741) {
+        // Mist, Fog
+        return 'assets/lottie/foggy.json';
+      }
+      return 'assets/lottie/mist.json'; // Haze, Smoke, Dust, etc.
     }
+
+    // --- 2xx Thunderstorm ---
+    if (mainId == 2) {
+      if (id >= 211 && id <= 221) {
+        // Heavy/Ragged Thunderstorms
+        return 'assets/lottie/shower_strom_day.json';
+      }
+      return 'assets/lottie/thunder.json'; // General thunderstorm
+    }
+
+    // --- 6xx Snow ---
+    if (mainId == 6) {
+      if (isNight) {
+        return 'assets/lottie/snow_night.json';
+      }
+      // Light snow in the day
+      if (id == 600 || id == 620) {
+        return 'assets/lottie/snow_sunny.json';
+      }
+      return 'assets/lottie/snow.json'; // General snow, sleet, or heavy
+    }
+
+    // --- 5xx Rain & 3xx Drizzle ---
+    if (mainId == 3 || mainId == 5) {
+      if (isNight) {
+        return 'assets/lottie/rainy_night.json';
+      }
+      return 'assets/lottie/partly_shower.json'; // General daytime rain/drizzle
+    }
+
+    // --- 8xx Clear & Clouds ---
+    if (mainId == 8) {
+      if (id == 800) {
+        // Clear
+        return isNight
+            ? 'assets/lottie/clear_night.json'
+            : 'assets/lottie/sunny.json';
+      }
+
+      // All other clouds (801 - 804, including the specific 804 overcast case)
+      return isNight
+          ? 'assets/lottie/cloudy_night.json'
+          : 'assets/lottie/partly_cloudy.json';
+    }
+
+    // Fallback: This could be used for 781 Tornado or other unsupported IDs
+    return 'assets/lottie/partly_cloudy.json';
+  }
+
+  /// Returns the appropriate Weather Icon based on the OWM ID.
+  dynamic _getWeatherIcon(int id) {
+    final mainId = id ~/ 100;
+
+    // --- 2xx Thunderstorm ---
+    if (mainId == 2) return WeatherIcons.thunderstorm;
+    // --- 3xx Drizzle ---
+    if (mainId == 3) return WeatherIcons.sprinkle;
+    // --- 5xx Rain ---
+    if (mainId == 5) return WeatherIcons.rain;
+    // --- 6xx Snow ---
+    if (mainId == 6) return WeatherIcons.snow;
+    // --- 7xx Atmosphere ---
+    if (mainId == 7) {
+      if (id == 781) return WeatherIcons.tornado;
+      return WeatherIcons.fog;
+    }
+    // --- 8xx Clear & Clouds ---
+    if (mainId == 8) {
+      if (id == 800) return WeatherIcons.day_sunny; // Clear
+      if (id == 801) return WeatherIcons.day_cloudy_gusts; // Few clouds
+      if (id == 804) return WeatherIcons.cloud; // Overcast (804)
+      return WeatherIcons.cloudy; // 802, 803
+    }
+
+    return WeatherIcons.cloudy_gusts; // Default fallback icon
   }
 
   // --- Data Fetching Logic ---
 
-  /// Initiates the fetching of both current weather and the 5-day forecast.
   void fetchWeather() async {
     final cityName = cityController.text.trim();
     if (cityName.isEmpty) {
@@ -101,7 +170,6 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    // Reset state and show loading indicator
     setState(() {
       isLoading = true;
       weatherData = null;
@@ -110,18 +178,14 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      // 1. Fetch Current Weather (required for main display)
       final currentWeather = await _weatherService.fetchWeather(cityName);
-
-      // 2. Fetch 5-Day Forecast (required for forecast section)
       final fiveDayForecast = await _weatherService.fetchForecast(cityName);
 
       setState(() {
         weatherData = currentWeather;
-        forecastData = fiveDayForecast; // Update state with forecast
+        forecastData = fiveDayForecast;
       });
     } catch (e) {
-      // Handle and display any exceptions during API calls
       setState(() {
         errorMessage =
             "Could not fetch weather. ${e.toString().split(':').last.trim()}";
@@ -132,7 +196,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ).showSnackBar(SnackBar(content: Text(errorMessage!)));
       }
     } finally {
-      // Hide loading indicator
       setState(() {
         isLoading = false;
       });
@@ -290,11 +353,18 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 30),
 
-              // Current Weather Icon
-              Icon(
-                _getWeatherIcon(weatherData!.mainCondition),
-                size: 150,
-                color: Colors.white,
+              // LOTTIE ANIMATION
+              SizedBox(
+                width: 200,
+                height: 200,
+                child: Lottie.asset(
+                  _getLottieAsset(
+                    weatherData!.weatherId,
+                    weatherData!.iconCode,
+                  ),
+                  repeat: true,
+                  animate: true,
+                ),
               ),
 
               const SizedBox(height: 20),
@@ -365,20 +435,24 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Column(
         children: [
-          _buildStatRow(Icons.opacity, "Humidity", "${data.humidity}%"),
+          // Stat 1: Humidity
+          _buildStatRow(WeatherIcons.humidity, "Humidity", "${data.humidity}%"),
+          // Stat 2: Wind Speed
           _buildStatRow(
-            Icons.air,
+            WeatherIcons.strong_wind,
             "Wind Speed",
             "${data.windSpeed.toStringAsFixed(1)} m/s",
           ),
+          // Stat 3: Sunrise
           _buildStatRow(
-            Icons.wb_sunny_outlined,
+            WeatherIcons.sunrise,
             "Sunrise",
             // Format time: HH:MM
             '${data.sunrise.hour.toString().padLeft(2, '0')}:${data.sunrise.minute.toString().padLeft(2, '0')}',
           ),
+          // Stat 4: Sunset
           _buildStatRow(
-            Icons.nightlight_round,
+            WeatherIcons.sunset,
             "Sunset",
             // Format time: HH:MM
             '${data.sunset.hour.toString().padLeft(2, '0')}:${data.sunset.minute.toString().padLeft(2, '0')}',
@@ -389,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// Helper to create a single row for a detailed stat (e.g., 'Humidity: 80%').
-  Widget _buildStatRow(IconData icon, String label, String value) {
+  Widget _buildStatRow(dynamic icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -397,7 +471,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, color: Colors.white70, size: 20),
+              Icon(icon as IconData, color: Colors.white70, size: 20),
               const SizedBox(width: 8),
               Text(
                 label,
@@ -455,6 +529,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildForecastCard(ForecastModel forecast) {
     // Format the date to show the day of the week (e.g., 'Mon')
     final dayOfWeek = DateFormat('EEE').format(forecast.dateTime);
+    final weatherId = forecast.weatherId;
 
     return Container(
       width: 100, // Fixed width for each card
@@ -478,9 +553,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Weather Icon
+          // Weather Icon (using WeatherIcons)
           Icon(
-            _getWeatherIcon(forecast.mainCondition),
+            _getWeatherIcon(weatherId) as IconData, // Uses the same ID logic
             size: 30,
             color: Colors.white,
           ),
