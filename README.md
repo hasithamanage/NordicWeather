@@ -5,38 +5,37 @@
 ![OpenWeatherMap API](https://img.shields.io/badge/API-OpenWeatherMap-blue)
 [![Project Board](https://img.shields.io/badge/Project_Board-Track_Here-blue)](https://github.com/hasithamanage/NordicWeather/projects)
 
-A modern, visually engaging Flutter application that provides accurate current weather data and a precise 5-day forecast with dynamic animations and styling.
+A modern, visually engaging Flutter app that displays accurate current weather and a precise 5-day forecast with dynamic animations and styling.
 
 ---
 
 ## 🚀 Status: Core Functionality Complete
 
-The core weather fetching, processing, and primary UI features are fully implemented. Development is currently focused on polish, error handling, and secondary features. Track the progress via the [Project Board](https://github.com/hasithamanage/NordicWeather/projects).
+Core weather fetching, processing, and primary UI are implemented. Current focus: polish, error handling, and secondary features. Track progress on the [Project Board](https://github.com/hasithamanage/NordicWeather/projects).
 
 ---
 
-## 🔥 Features
+## 🔥 Highlights
 
-### ✅ Completed & Implemented
-
-- **Dynamic Lottie Animations:** Main screen features animated Lottie icons that change based on the weather condition (e.g., thunder, rain, sun) and time of day.
-- **Dynamic UI Styling:** Background gradients adapt instantly to weather conditions for immersive UX.
-- **Accurate 5-Day Forecast:** Shows the forecast closest to 12:00 PM for each day—more relevant daily overviews.
-- **Decoupled Architecture:** WeatherModel and ForecastModel are separated for clean, robust data management.
-- **Full API Connection:** Real-time weather and forecast data via OpenWeatherMap API.
-- **Service Structure:** Robust WeatherService handles all data fetching and logic.
-- **Clean UI:** Modern, intuitive main weather screen.
-
-### 🚧 In Progress
-
-- Implement location detection ([#5](https://github.com/hasithamanage/NordicWeather/issues/5))
+- Dynamic Lottie animations and adaptive background gradients based on weather and time-of-day.
+- Accurate 5-day forecast (selects the item closest to 12:00 PM each day for a relevant daily summary).
+- Clean separation of concerns: WeatherModel, ForecastModel, and WeatherService.
+- Full OpenWeatherMap API integration and robust service-layer logic.
+- Modern, responsive UI built with Flutter.
 
 ---
 
-## 📋 Project Board
+## ✅ Implemented
 
-Track tasks, progress, and development milestones on the dedicated  
-**[NordicWeather Project Board](https://github.com/hasithamanage/NordicWeather/projects)**.
+- Dynamic Lottie animations that change with weather conditions.
+- Adaptive UI gradients for immersive UX.
+- 5-day forecast using the midday-sampling heuristic (closest to 12:00 PM).
+- Decoupled data models (WeatherModel, ForecastModel).
+- WeatherService handling API calls and forecast filtering.
+
+## 🚧 In Progress
+
+- Location detection and permission handling - see issue [#5](https://github.com/hasithamanage/NordicWeather/issues/5).
 
 ---
 
@@ -44,7 +43,8 @@ Track tasks, progress, and development milestones on the dedicated
 
 <!-- Add your demo GIF or images here once ready -->
 ![image info](./kuvat/result(1).png)
-![Screenshot Coming Soon](https://via.placeholder.com/400x300?text=Demo+Coming+Soon)
+![image info](./kuvat/result(2).png)
+![image info](./kuvat/result(3).png)
 
 _Screenshots and live demo GIFs will be added as the project evolves!_
 
@@ -52,16 +52,15 @@ _Screenshots and live demo GIFs will be added as the project evolves!_
 
 ## 🛠️ Tech Stack
 
-- **Flutter (Dart)**
-- REST API (OpenWeatherMap)
-- Material Design UI
-- VS Code (recommended editor)
-- lottie (dynamic weather animations)
-- weather_icons (consistent icons for forecast)
+- Flutter (Dart)
+- OpenWeatherMap REST API
+- Lottie for animations
+- weather_icons package
+- Material Design
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ```sh
 # 1. Clone the repository
@@ -81,7 +80,7 @@ flutter run
 ```
 
 > ⚠️ **API Key Security:**  
-> Keep your API key private—do NOT share or commit your `.env` file to a public repository.
+> Keep your API key private. Do not share or commit your `.env` file to a public repository.
 
 ---
 
@@ -102,27 +101,44 @@ lib/
 
 ---
 
+## 💡 How forecasting works (short)
+OpenWeatherMap provides 3-hourly forecast entries; the app selects, for each day, the forecast entry whose timestamp is closest to 12:00 PM local time to create a meaningful daily summary.
+
+---
+
+## ❗ Troubleshooting & Known issues
+
+- If the app shows empty forecast data, confirm your API key is valid and not rate-limited.
+- Location-based features require platform permissions (AndroidManifest / Info.plist). See issue [#5](https://github.com/hasithamanage/NordicWeather/issues/5) for progress.
+- If animations fail to load, ensure Lottie assets are present and referenced correctly.
+
+---
+
+## 🛡️ Security & API keys
+
+- Keep your OpenWeatherMap API key private. Add `.env` to `.gitignore`.
+- Consider using a secrets manager or server-side proxy if you plan to publish a production app to avoid exposing API keys.
+
+---
+
 ## 🤝 Contributing
 
-This project is under active development.  
-**Contributions and suggestions are welcome once the core functionality is stable!**
-
-- Please check for existing [issues](https://github.com/hasithamanage/NordicWeather/issues) before submitting a new one.
-- For major changes, open a discussion or proposal before your PR.
-- See `CONTRIBUTING.md` (coming soon) for detailed guidelines.
+Contributions are welcome! Please:
+1. Check existing issues before opening a new one.
+2. For major changes, open an issue or discussion first.
+3. Follow repository conventions (formatting, tests).
+4. See `CONTRIBUTING.md` for details.
 
 ---
 
 ## 📄 License
 
-Distributed under the MIT License.  
-See [LICENSE](LICENSE) for more information.
+Distributed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
 ## 📬 Contact / Support
 
-Questions or suggestions?  
 - Open an [issue](https://github.com/hasithamanage/NordicWeather/issues)
-- Discussions: (coming soon)
-- Or reach out via [GitHub profile](https://github.com/hasithamanage)
+- Project board: [NordicWeather Development Roadmap](https://github.com/hasithamanage/NordicWeather/projects)
+- GitHub: https://github.com/hasithamanage
